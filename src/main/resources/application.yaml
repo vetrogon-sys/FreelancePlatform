@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:itclass;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driverClassName: org.h2.Driver
+  h2:
+    console:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      show_sql: true
+      format_sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
+logging:
+  level:
+    org:
+      hibernate:
+        type: trace
+jwt:
+  header: Authorization
+  key: blaba
+   # token is valid 24 hours
+  token-validity-in-seconds: 86400
+  # valid 30 hours
+  token-validity-in-seconds-for-remember-me: 108000
+  route:
+    authentication:
+      path: auth
+      refresh: refresh
