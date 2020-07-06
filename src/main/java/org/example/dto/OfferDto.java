@@ -1,17 +1,14 @@
 package org.example.dto;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Data
-@Getter
-@Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class OfferDto {
 
     private UserDto freelancer;
 
-    private JobDto job;
+    private Long jobId;
 }

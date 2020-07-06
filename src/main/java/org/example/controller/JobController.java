@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -36,31 +37,53 @@ public class JobController {
     public RestResponse getJobs() {
         List<Job> jobs = StreamSupport.stream(jobRepository.findAll().spliterator(), false)
                 .collect(Collectors.toList());
+        mapperFactory.classMap(User.class, UserDto.class);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        List<JobDto> jobDtoList = new ArrayList<>();
+        for (Job job : jobs) {
+            if (job.getStage().equals(stageRepository.findById("Размещено").orElse(null))) {
+                jobDtoList.add(JobDto.builder()
+                        .name(job.getName())
+                        .description(job.getDescription())
+                        .employer(mapper.map(job.getEmployer(), UserDto.class))
+                        .skills(job.getSkills())
+                        .stage(job.getStage())
+                        .build());
+            }
+        }
 
         return RestResponse.builder()
                 .isSuccess(true)
-                .response(jobs)
+                .response(jobDtoList)
                 .build();
     }
 
     @GetMapping("/{id}")
     public RestResponse findJobByIid(@PathVariable Long id) {
         Job job = jobRepository.findById(id).orElse(null);
-        mapperFactory.classMap(User.class, UserDto.class);
-        MapperFacade mapper = mapperFactory.getMapperFacade();
+        if (job != null) {
+            mapperFactory.classMap(User.class, UserDto.class);
+            MapperFacade mapper = mapperFactory.getMapperFacade();
 
-        JobDto jobDto = JobDto.builder()
-                .name(job.getName())
-                .description(job.getDescription())
-                .employer(mapper.map(job.getEmployer(), UserDto.class))
-                .skills(job.getSkills())
-                .stage(job.getStage())
-                .build();
+            JobDto jobDto = JobDto.builder()
+                    .name(job.getName())
+                    .description(job.getDescription())
+                    .employer(mapper.map(job.getEmployer(), UserDto.class))
+                    .skills(job.getSkills())
+                    .stage(job.getStage())
+                    .build();
 
-        return RestResponse.builder()
-                .isSuccess(true)
-                .response(jobDto)
-                .build();
+            return RestResponse.builder()
+                    .isSuccess(true)
+                    .response(jobDto)
+                    .build();
+        } else {
+            return RestResponse.builder()
+                    .isSuccess(false)
+                    .response("There is not job with same id")
+                    .build();
+        }
     }
 
     @PostMapping
@@ -71,9 +94,8 @@ public class JobController {
             job.setEmployer((Employer) currentUser);
             Job savedJob = jobRepository.save(job);
             return ResponseEntity.created(URI.create("/jobs/" + savedJob.getId())).body("Created");
+        } else {
+            return ResponseEntity.badRequest().body("Only employer can create job");
         }
-        return ResponseEntity.badRequest().body("Only employer can create job");
     }
-
-
 }

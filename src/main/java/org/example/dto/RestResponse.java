@@ -13,4 +13,12 @@ public class RestResponse {
 
     private boolean isSuccess;
     private Object response;
+
+    public static RestResponse generateSuccessfulResponse(Object object) {
+        return RestResponse.builder().isSuccess(true).response(object).build();
+    }
+
+    public static RestResponse generateFailedResponse(Object object) {
+        return RestResponse.builder().isSuccess(false).response(object).build();
+    }
 }

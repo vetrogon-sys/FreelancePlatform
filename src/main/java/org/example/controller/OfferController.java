@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
-import org.example.dto.JobDto;
+import org.example.config.OrikaConfig;
 import org.example.dto.OfferDto;
 import org.example.dto.RestResponse;
 import org.example.dto.UserDto;
@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -47,16 +48,17 @@ public class OfferController {
                 State badState = stateRepository.findById("Отклонено").orElse(null);
 
                 for (Offer off : offers) {
-                    if (off.equals(offer)) {
-                        off.setState(stateRepository.findById("Подтверждено").orElse(null));
-                    } else {
-                        off.setState(badState);
+                    if (off.getJob().equals(job)) {
+                        if (off.equals(offer)) {
+                            off.setState(stateRepository.findById("Подтверждено").orElse(null));
+                        } else {
+                            off.setState(badState);
+                        }
                     }
                 }
 
                 offerRepository.saveAll(offers);
                 jobRepository.save(job);
-
                 return RestResponse.builder()
                         .isSuccess(true)
                         .response("Confirmed")
@@ -67,11 +69,45 @@ public class OfferController {
                         .response("is not offer with same id")
                         .build();
             }
+        } else {
+            return RestResponse.builder()
+                    .isSuccess(false)
+                    .response("is not job with same id")
+                    .build();
         }
-        return RestResponse.builder()
-                .isSuccess(false)
-                .response("is not job with same id")
-                .build();
+    }
+
+    @GetMapping
+    public RestResponse getOffers(@PathVariable Long jobId) {
+        Job job = jobRepository.findById(jobId).orElse(null);
+        if (job != null) {
+            List<Offer> offers = StreamSupport.stream(offerRepository.findAll().spliterator(), false)
+                    .collect(Collectors.toList());
+
+            List<OfferDto> offerDtoList = new ArrayList<>();
+
+            mapperFactory.classMap(User.class, UserDto.class);
+            MapperFacade userMapper = mapperFactory.getMapperFacade();
+
+            for (Offer offer: offers) {
+                if (offer.getJob().getId().equals(jobId)) {
+                    offerDtoList.add(OfferDto.builder()
+                            .freelancer(userMapper.map(offer.getFreelancer(), UserDto.class))
+                            .jobId(jobId)
+                            .build());
+                }
+            }
+
+            return RestResponse.builder()
+                    .isSuccess(true)
+                    .response(offerDtoList)
+                    .build();
+        } else {
+            return RestResponse.builder()
+                    .isSuccess(false)
+                    .response("is not job with same id")
+                    .build();
+        }
     }
 
     @GetMapping("/{id}")
@@ -82,13 +118,11 @@ public class OfferController {
                 mapperFactory.classMap(User.class, UserDto.class);
                 MapperFacade userMapper = mapperFactory.getMapperFacade();
 
-                mapperFactory.classMap(Job.class, JobDto.class);
-                MapperFacade jobMapper = mapperFactory.getMapperFacade();
-
-                OfferDto offerDto = OfferDto.builder()
-                        .freelancer(userMapper.map(offer.getFreelancer(), UserDto.class))
-                        .job(jobMapper.map(offer.getJob(), JobDto.class))
-                        .build();
+                OfferDto offerDto = OrikaConfig.getMapperFactory().getMapperFacade().map(offer, OfferDto.class);
+//                OfferDto offerDto = OfferDto.builder()
+//                        .freelancer(userMapper.map(offer.getFreelancer(), UserDto.class))
+//                        .jobId(offer.getJob().getId())
+//                        .build();
 
                 return RestResponse.builder()
                         .isSuccess(true)
@@ -97,30 +131,38 @@ public class OfferController {
             }
             return RestResponse.builder()
                     .isSuccess(false)
-                    .response("is not offer with same id")
+                    .response("there is not offer with same id")
+                    .build();
+        } else {
+            return RestResponse.builder()
+                    .isSuccess(false)
+                    .response("there is not job with same id")
                     .build();
         }
-        return RestResponse.builder()
-                .isSuccess(false)
-                .response("is not job with same id")
-                .build();
     }
 
     @PostMapping()
     public ResponseEntity<?> createOffer(@PathVariable Long jobId) {
         User user = userService.getUserFromSecurityContext();
         if (user.getClass().equals(Freelancer.class)) {
-            if (jobRepository.existsById(jobId)) {
-                Offer savedOffer = offerRepository.save(Offer.builder()
-                        .job(jobRepository.findById(jobId).orElse(null))
-                        .freelancer((Freelancer) user)
-                        .state(stateRepository.findById("Ожидание").orElse(null))
-                        .build());
-                return ResponseEntity.created(URI.create("/jobs/" + jobId + "/offer/" + savedOffer.getId())).body("Created");
+            Job job = jobRepository.findById(jobId).orElse(null);
+            if (job != null) {
+                if (job.getStage().equals(stageRepository.findById("Размещено").orElse(null))) {
+                    Offer savedOffer = offerRepository.save(Offer.builder()
+                            .job(job)
+                            .freelancer((Freelancer) user)
+                            .state(stateRepository.findById("Ожидание").orElse(null))
+                            .build());
+                    return ResponseEntity.created(URI.create("/jobs/" + jobId + "/offer/" + savedOffer.getId())).body("Created");
+                } else {
+                    return ResponseEntity.badRequest().body("the job is in the development garden");
+                }
             } else {
-                return ResponseEntity.badRequest().body("Is not job with that id");
+                return ResponseEntity.badRequest().body("there is not job with same id");
             }
+
+        } else {
+            return ResponseEntity.badRequest().body("Only freelancer can send offers");
         }
-        return ResponseEntity.badRequest().body("Only freelancer can send offers");
     }
 }

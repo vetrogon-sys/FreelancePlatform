@@ -7,7 +7,6 @@ import lombok.Setter;
 import org.example.entity.Skill;
 import org.example.entity.Stage;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -18,7 +17,7 @@ public class JobDto {
     private String name;
     private String description;
 
-    private List<Skill> skills = new ArrayList<>();
+    private List<Skill> skills;
 
     private UserDto employer;
 
