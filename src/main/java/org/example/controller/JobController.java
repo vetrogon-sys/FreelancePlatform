@@ -1,8 +1,10 @@
 package org.example.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.dto.FilterRequestDto;
 import org.example.dto.JobDto;
 import org.example.dto.RestResponse;
+import org.example.entity.FilterType;
 import org.example.exceptions.FailedRequestError;
 import org.example.service.JobService;
 import org.springframework.web.bind.annotation.*;
@@ -14,8 +16,12 @@ public class JobController {
     private final JobService jobService;
 
     @GetMapping
-    public RestResponse getJobs() {
-        return RestResponse.generateSuccessfulResponse(jobService.getDtoList());
+    public RestResponse getJobs(@RequestBody FilterRequestDto filterRequestDto) {
+        if (filterRequestDto.getFilterType().equals(FilterType.SKILL)) {
+            return RestResponse.generateSuccessfulResponse(jobService.getDtoListBySkills());
+        } else {
+            return RestResponse.generateSuccessfulResponse(jobService.getDtoList());
+        }
     }
 
     @GetMapping("/{id}")

@@ -3,10 +3,7 @@ package org.example.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.example.config.OrikaConfig;
 import org.example.dto.JobDto;
-import org.example.entity.Employer;
-import org.example.entity.Job;
-import org.example.entity.Stage;
-import org.example.entity.User;
+import org.example.entity.*;
 import org.example.exceptions.FailedRequestError;
 import org.example.repository.JobRepository;
 import org.example.service.JobService;
@@ -14,6 +11,7 @@ import org.example.service.UserService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -29,16 +27,33 @@ public class JobServiceImpl implements JobService {
         List<Job> jobs = StreamSupport.stream(jobRepository.findAll().spliterator(), false)
                 .collect(Collectors.toList());
 
-        List<JobDto> jobDtoList = new ArrayList<>();
-        for (Job job : jobs) {
-            if (job.getStage().equals(Stage.POSTED)) {
-                jobDtoList.add(OrikaConfig.getMapperFactory()
+        return jobs.stream()
+                .map(e -> OrikaConfig.getMapperFactory()
                         .getMapperFacade()
-                        .map(job, JobDto.class));
-            }
+                        .map(e, JobDto.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<JobDto> getDtoListBySkills() {
+        List<Job> jobs = StreamSupport.stream(jobRepository.findAll().spliterator(), false)
+                .collect(Collectors.toList());
+
+        List<Job> filteredJobs = new ArrayList<>();
+        Freelancer freelancer = (Freelancer) userService.getUserFromSecurityContext();
+        List<Skill> skillList = freelancer.getSkills();
+
+        if (skillList != null) {
+            filteredJobs = jobs.stream()
+                    .filter(e -> !Collections.disjoint(e.getSkills(), skillList))
+                    .collect(Collectors.toList());
         }
 
-        return jobDtoList;
+        return filteredJobs.stream()
+                .map(e -> OrikaConfig.getMapperFactory()
+                        .getMapperFacade()
+                        .map(e, JobDto.class))
+                .collect(Collectors.toList());
     }
 
     @Override

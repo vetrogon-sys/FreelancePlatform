@@ -1,11 +1,9 @@
 package org.example.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.config.OrikaConfig;
+import org.example.dto.FilterRequestDto;
 import org.example.dto.RestResponse;
-import org.example.dto.UserDto;
 import org.example.dto.UserParamsDto;
-import org.example.entity.User;
 import org.example.exceptions.FailedRequestError;
 import org.example.service.UserService;
 import org.springframework.web.bind.annotation.*;
@@ -18,15 +16,16 @@ public class UserController {
 
     @GetMapping("/{id}")
     public RestResponse getCurrentUser(@PathVariable Long id) {
-        User currentUser = userService.getUserFromSecurityContext();
-        if (currentUser.getId().equals(id)) {
-            UserDto userDto = OrikaConfig.getMapperFactory()
-                        .getMapperFacade()
-                        .map(currentUser, UserDto.class);
-
-            return RestResponse.generateSuccessfulResponse(userDto);
+        try {
+            return RestResponse.generateSuccessfulResponse(userService.getDtoById(id));
+        } catch (FailedRequestError error) {
+            return RestResponse.generateFailedResponse(error.getMessage());
         }
-        return RestResponse.generateFailedResponse("isn't logged users");
+    }
+
+    @GetMapping("/freelancers")
+    public RestResponse getFreelancers(@RequestBody FilterRequestDto filterRequestDto) {
+        return RestResponse.generateSuccessfulResponse(userService.getFreelancerDtoList(filterRequestDto));
     }
 
     @PutMapping("/{id}")
