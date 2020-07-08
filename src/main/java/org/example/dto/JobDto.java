@@ -1,18 +1,15 @@
 package org.example.dto;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.example.entity.Skill;
 import org.example.entity.Stage;
 
 import java.util.List;
 
 @Data
-@Getter
-@Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class JobDto {
     private String name;
     private String description;
@@ -20,6 +17,7 @@ public class JobDto {
     private List<Skill> skills;
 
     private UserDto employer;
+    private FreelancerDto freelancer;
 
     private Stage stage;
 }

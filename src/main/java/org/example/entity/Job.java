@@ -34,8 +34,6 @@ public class Job {
     @JoinColumn(name = "freelancer_id")
     private Freelancer freelancer;
 
-    @ManyToOne()
-    @JoinColumn(name = "stage_name")
     private Stage stage;
 
     @OneToMany(mappedBy = "job")

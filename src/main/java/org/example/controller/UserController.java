@@ -1,14 +1,15 @@
 package org.example.controller;
 
+import lombok.RequiredArgsConstructor;
+import org.example.config.OrikaConfig;
+import org.example.dto.FreelancerDto;
 import org.example.dto.RestResponse;
 import org.example.dto.UserDto;
 import org.example.dto.UserParamsDto;
+import org.example.entity.Freelancer;
 import org.example.entity.User;
+import org.example.exceptions.FailedRequestError;
 import org.example.service.UserService;
-import lombok.RequiredArgsConstructor;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
-import ma.glasnost.orika.impl.DefaultMapperFactory;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,46 +17,34 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    private MapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
 
     @GetMapping("/{id}}")
     public RestResponse getCurrentUser(@PathVariable Long id) {
         User currentUser = userService.getUserFromSecurityContext();
         if (currentUser.getId().equals(id)) {
-            mapperFactory.classMap(User.class, UserDto.class);
-            MapperFacade mapper = mapperFactory.getMapperFacade();
-            UserDto userDto = mapper.map(currentUser, UserDto.class);
-            return RestResponse.builder()
-                    .isSuccess(true)
-                    .response(userDto)
-                    .build();
+            UserDto userDto;
+            if (currentUser.getClass().equals(Freelancer.class)) {
+                userDto = OrikaConfig.getMapperFactory()
+                        .getMapperFacade()
+                        .map(currentUser, FreelancerDto.class);
+            } else {
+                userDto = OrikaConfig.getMapperFactory()
+                        .getMapperFacade()
+                        .map(currentUser, UserDto.class);
+            }
+            return RestResponse.generateSuccessfulResponse(userDto);
         }
-        return RestResponse.builder()
-                .isSuccess(false)
-                .response("isn't logged users")
-                .build();
+        return RestResponse.generateFailedResponse("isn't logged users");
     }
 
     @PutMapping("/{id}")
     public RestResponse updateUser(@RequestBody UserParamsDto userParamsDto, @PathVariable Long id) {
-        User currentUser = userService.getUserFromSecurityContext();
-        if (currentUser.getId().equals(id)) {
-            if (userService.update(currentUser, userParamsDto)) {
-                return RestResponse.builder()
-                        .isSuccess(true)
-                        .response("Vse ok")
-                        .build();
-            } else {
-                return RestResponse.builder()
-                        .isSuccess(false)
-                        .response("Что-то пошло нетак")
-                        .build();
-            }
+        try {
+            userService.update(userParamsDto, id);
+            return RestResponse.generateSuccessfulResponse("Updated");
+        } catch (FailedRequestError error) {
+            return RestResponse.generateFailedResponse(error.getMessage());
         }
-        return RestResponse.builder()
-                .isSuccess(false)
-                .response("Aаttempt to change another user")
-                .build();
     }
 
 }

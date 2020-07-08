@@ -34,17 +34,10 @@ public class AuthController {
     @PostMapping("/register")
     public RestResponse register(@RequestBody LoginDto login) {
         if (userService.save(login)) {
-            return RestResponse.builder()
-                    .isSuccess(true)
-                    .response("Vse ok")
-                    .build();
+            return RestResponse.generateSuccessfulResponse("Saved");
         } else {
-            return RestResponse.builder()
-                    .isSuccess(false)
-                    .response("Такой логин уже есть в системе")
-                    .build();
+            return RestResponse.generateFailedResponse("This login already exists in the system");
         }
-
     }
 
     @PostMapping("/authenticate")

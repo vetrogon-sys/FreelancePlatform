@@ -1,9 +1,8 @@
 package org.example.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import org.example.entity.Skill;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,6 +17,5 @@ public class UserDto {
     private String name;
     private String surname;
     private LocalDateTime createdOn;
-
-    private List<Skill> skills = new ArrayList<>();
+    private List<JobDto> jobs = new ArrayList<>();
 }

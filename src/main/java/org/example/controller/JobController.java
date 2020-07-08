@@ -1,101 +1,50 @@
 package org.example.controller;
 
 import lombok.RequiredArgsConstructor;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
-import ma.glasnost.orika.impl.DefaultMapperFactory;
 import org.example.dto.JobDto;
 import org.example.dto.RestResponse;
-import org.example.dto.UserDto;
-import org.example.entity.Employer;
-import org.example.entity.Job;
-import org.example.entity.User;
-import org.example.repository.JobRepository;
-import org.example.repository.OfferRepository;
-import org.example.repository.StageRepository;
-import org.example.service.UserService;
-import org.springframework.http.ResponseEntity;
+import org.example.exceptions.FailedRequestError;
+import org.example.service.JobService;
 import org.springframework.web.bind.annotation.*;
-
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @RestController
 @RequestMapping("/jobs")
 @RequiredArgsConstructor
 public class JobController {
-    private final UserService userService;
-    private final JobRepository jobRepository;
-    private final OfferRepository offerRepository;
-    private final StageRepository stageRepository;
-    private MapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
+    private final JobService jobService;
 
     @GetMapping
     public RestResponse getJobs() {
-        List<Job> jobs = StreamSupport.stream(jobRepository.findAll().spliterator(), false)
-                .collect(Collectors.toList());
-        mapperFactory.classMap(User.class, UserDto.class);
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-
-        List<JobDto> jobDtoList = new ArrayList<>();
-        for (Job job : jobs) {
-            if (job.getStage().equals(stageRepository.findById("Размещено").orElse(null))) {
-                jobDtoList.add(JobDto.builder()
-                        .name(job.getName())
-                        .description(job.getDescription())
-                        .employer(mapper.map(job.getEmployer(), UserDto.class))
-                        .skills(job.getSkills())
-                        .stage(job.getStage())
-                        .build());
-            }
-        }
-
-        return RestResponse.builder()
-                .isSuccess(true)
-                .response(jobDtoList)
-                .build();
+        return RestResponse.generateSuccessfulResponse(jobService.getDtoList());
     }
 
     @GetMapping("/{id}")
     public RestResponse findJobByIid(@PathVariable Long id) {
-        Job job = jobRepository.findById(id).orElse(null);
-        if (job != null) {
-            mapperFactory.classMap(User.class, UserDto.class);
-            MapperFacade mapper = mapperFactory.getMapperFacade();
+        try {
+            return RestResponse.generateSuccessfulResponse(jobService.getDtoById(id));
+        } catch (FailedRequestError error) {
+            return RestResponse.generateFailedResponse(error.getMessage());
+        }
+    }
 
-            JobDto jobDto = JobDto.builder()
-                    .name(job.getName())
-                    .description(job.getDescription())
-                    .employer(mapper.map(job.getEmployer(), UserDto.class))
-                    .skills(job.getSkills())
-                    .stage(job.getStage())
-                    .build();
-
-            return RestResponse.builder()
-                    .isSuccess(true)
-                    .response(jobDto)
-                    .build();
-        } else {
-            return RestResponse.builder()
-                    .isSuccess(false)
-                    .response("There is not job with same id")
-                    .build();
+    @PutMapping("/{id}")
+    public RestResponse closeJob(@PathVariable Long id,
+                                 @RequestBody boolean isPerformed) {
+        try {
+            jobService.close(id, isPerformed);
+            return RestResponse.generateSuccessfulResponse("was closed");
+        } catch (FailedRequestError error) {
+            return RestResponse.generateFailedResponse(error.getMessage());
         }
     }
 
     @PostMapping
-    public ResponseEntity<?> createJob(@RequestBody Job job) {
-        User currentUser = userService.getUserFromSecurityContext();
-        if (currentUser.getClass().equals(Employer.class)) {
-            job.setStage(stageRepository.findById("Размещено").orElse(null));
-            job.setEmployer((Employer) currentUser);
-            Job savedJob = jobRepository.save(job);
-            return ResponseEntity.created(URI.create("/jobs/" + savedJob.getId())).body("Created");
-        } else {
-            return ResponseEntity.badRequest().body("Only employer can create job");
+    public RestResponse createJob(@RequestBody JobDto jobDto) {
+        try {
+            jobService.create(jobDto);
+            return RestResponse.generateSuccessfulResponse("Created");
+        } catch (FailedRequestError error) {
+            return RestResponse.generateFailedResponse(error.getMessage());
         }
     }
 }

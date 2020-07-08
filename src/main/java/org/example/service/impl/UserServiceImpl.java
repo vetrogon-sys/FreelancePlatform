@@ -6,6 +6,7 @@ import org.example.entity.Authority;
 import org.example.entity.Employer;
 import org.example.entity.Freelancer;
 import org.example.entity.User;
+import org.example.exceptions.FailedRequestError;
 import org.example.repository.AuthorityRepository;
 import org.example.repository.UserRepository;
 import org.example.service.UserService;
@@ -62,18 +63,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean update(User user, UserParamsDto userParamsDto) {
-        User currentUser = userRepository.findByLogin(user.getLogin()).orElse(null);
-        if (currentUser != null) {
+    public void update(UserParamsDto userParamsDto, Long userId) throws FailedRequestError {
+        User currentUser = getUserFromSecurityContext();
+        if (currentUser.getId().equals(userId)) {
             currentUser.setName(userParamsDto.getName());
             currentUser.setSurname(userParamsDto.getSurname());
             if (currentUser.getClass().equals(Freelancer.class)) {
                 ((Freelancer) currentUser).setSkills(userParamsDto.getSkills());
             }
             userRepository.save(currentUser);
-            return true;
+        } else {
+            throw new FailedRequestError("Attempt to change another user");
         }
-        return false;
     }
 
     @Override

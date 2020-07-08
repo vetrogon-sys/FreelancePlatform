@@ -24,7 +24,5 @@ public class Offer {
     @JoinColumn(name = "job_id")
     private Job job;
 
-    @OneToOne
-    @JoinColumn(name = "state_name")
     private State state;
 }

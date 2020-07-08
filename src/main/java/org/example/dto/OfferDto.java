@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 public class OfferDto {
 
-    private UserDto freelancer;
+    private FreelancerDto freelancer;
 
-    private Long jobId;
+    private JobDto job;
 }
