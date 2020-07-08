@@ -38,4 +38,5 @@ public class Job {
 
     @OneToMany(mappedBy = "job")
     private List<Offer> offers = new ArrayList<>();
+
 }

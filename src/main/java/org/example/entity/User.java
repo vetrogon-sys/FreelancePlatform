@@ -39,4 +39,5 @@ public abstract class User {
             inverseJoinColumns = {@JoinColumn(name = "AUTHORITY_NAME", referencedColumnName = "NAME")})
     @BatchSize(size = 20)
     private List<Authority> authorities = new ArrayList<>();
+
 }

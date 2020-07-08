@@ -9,15 +9,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class UserDto {
 
     private String login;
     private String name;
     private String surname;
     private LocalDateTime createdOn;
-
     private List<Skill> skills;
+
     private List<JobDto> jobs;
 }

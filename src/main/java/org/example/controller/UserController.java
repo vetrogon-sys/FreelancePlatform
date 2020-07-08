@@ -20,12 +20,11 @@ public class UserController {
     public RestResponse getCurrentUser(@PathVariable Long id) {
         User currentUser = userService.getUserFromSecurityContext();
         if (currentUser.getId().equals(id)) {
-            UserDto userDto;
-            userDto = OrikaConfig.getMapperFactory()
-                    .getMapperFacade()
-                    .map(currentUser, UserDto.class);
-            return RestResponse.generateSuccessfulResponse(userDto);
+            UserDto userDto = OrikaConfig.getMapperFactory()
+                        .getMapperFacade()
+                        .map(currentUser, UserDto.class);
 
+            return RestResponse.generateSuccessfulResponse(userDto);
         }
         return RestResponse.generateFailedResponse("isn't logged users");
     }

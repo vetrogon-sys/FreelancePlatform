@@ -25,9 +25,9 @@ public class Freelancer extends User {
             inverseJoinColumns = @JoinColumn(name = "name"))
     private List<Skill> skills = new ArrayList<>();
 
-    @OneToMany(mappedBy = "freelancer")
+    @OneToMany(mappedBy = "freelancer", fetch = FetchType.LAZY)
     private List<Offer> offers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "freelancer")
+    @OneToMany(mappedBy = "freelancer", fetch = FetchType.LAZY)
     private List<Job> jobs = new ArrayList<>();
 }

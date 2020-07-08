@@ -1,5 +1,6 @@
 package org.example.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.example.dto.LoginDto;
 import org.example.dto.UserParamsDto;
 import org.example.entity.Authority;
@@ -10,12 +11,12 @@ import org.example.exceptions.FailedRequestError;
 import org.example.repository.AuthorityRepository;
 import org.example.repository.UserRepository;
 import org.example.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -58,6 +59,7 @@ public class UserServiceImpl implements UserService {
                     .authorities(Collections.singletonList(authority))
                     .build();
         }
+        user.setCreatedOn(LocalDateTime.now().withNano(0));
         userRepository.save(user);
         return true;
     }

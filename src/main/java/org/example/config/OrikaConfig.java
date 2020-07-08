@@ -17,7 +17,17 @@ public class OrikaConfig {
                 .byDefault()
                 .register();
 
+        mapperFactory.classMap(Employer.class, UserParamsDto.class)
+                .byDefault()
+                .register();
+
+        mapperFactory.classMap(Freelancer.class, UserParamsDto.class)
+                .byDefault()
+                .register();
+
         mapperFactory.classMap(Job.class, JobDto.class)
+                .field("employer", "employer")
+                .field("freelancer", "freelancer")
                 .byDefault()
                 .register();
 
