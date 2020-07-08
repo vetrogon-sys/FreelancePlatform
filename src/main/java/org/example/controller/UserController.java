@@ -2,11 +2,9 @@ package org.example.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.config.OrikaConfig;
-import org.example.dto.FreelancerDto;
 import org.example.dto.RestResponse;
 import org.example.dto.UserDto;
 import org.example.dto.UserParamsDto;
-import org.example.entity.Freelancer;
 import org.example.entity.User;
 import org.example.exceptions.FailedRequestError;
 import org.example.service.UserService;
@@ -18,21 +16,16 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
 
-    @GetMapping("/{id}}")
+    @GetMapping("/{id}")
     public RestResponse getCurrentUser(@PathVariable Long id) {
         User currentUser = userService.getUserFromSecurityContext();
         if (currentUser.getId().equals(id)) {
             UserDto userDto;
-            if (currentUser.getClass().equals(Freelancer.class)) {
-                userDto = OrikaConfig.getMapperFactory()
-                        .getMapperFacade()
-                        .map(currentUser, FreelancerDto.class);
-            } else {
-                userDto = OrikaConfig.getMapperFactory()
-                        .getMapperFacade()
-                        .map(currentUser, UserDto.class);
-            }
+            userDto = OrikaConfig.getMapperFactory()
+                    .getMapperFacade()
+                    .map(currentUser, UserDto.class);
             return RestResponse.generateSuccessfulResponse(userDto);
+
         }
         return RestResponse.generateFailedResponse("isn't logged users");
     }

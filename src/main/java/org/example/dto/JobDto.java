@@ -17,7 +17,7 @@ public class JobDto {
     private List<Skill> skills;
 
     private UserDto employer;
-    private FreelancerDto freelancer;
+    private UserDto freelancer;
 
     private Stage stage;
 }
