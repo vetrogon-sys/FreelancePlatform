@@ -11,4 +11,5 @@ import org.example.entity.FilterType;
 public class FilterRequestDto {
     private FilterType filterType;
     private String value;
+    private Integer param;
 }

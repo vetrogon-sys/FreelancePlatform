@@ -3,6 +3,7 @@ package org.example.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +36,9 @@ public class Job {
     private Freelancer freelancer;
 
     private Stage stage;
+
+    @Column(name = "create_on")
+    private LocalDateTime createdOn;
 
     @OneToMany(mappedBy = "job")
     private List<Offer> offers = new ArrayList<>();

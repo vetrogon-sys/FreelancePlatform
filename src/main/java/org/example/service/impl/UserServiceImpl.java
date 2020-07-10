@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -111,11 +112,19 @@ public class UserServiceImpl implements UserService {
                     .filter(e -> e.getSkills().contains(skill))
                     .collect(Collectors.toList());
         } else if (filterRequestDto.getFilterType().equals(FilterType.REGISTRATION_DATE)) {
-            LocalDateTime localDateTime = LocalDateTime.parse(filterRequestDto.getValue());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            LocalDateTime localDateTime = LocalDateTime.parse(filterRequestDto.getValue(), formatter);
 
-            filteredFreelancersList = freelancerList.stream()
-                    .filter(e -> e.getCreatedOn().isAfter(localDateTime))
-                    .collect(Collectors.toList());
+            if (filterRequestDto.getParam() > 0) {
+                filteredFreelancersList = freelancerList.stream()
+                        .filter(e -> e.getCreatedOn().isAfter(localDateTime))
+                        .collect(Collectors.toList());
+            } else if (filterRequestDto.getParam() < 0) {
+                filteredFreelancersList = freelancerList.stream()
+                        .filter(e -> e.getCreatedOn().isBefore(localDateTime))
+                        .collect(Collectors.toList());
+            }
+
         }
 
         return filteredFreelancersList.stream()

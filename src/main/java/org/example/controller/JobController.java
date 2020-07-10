@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.example.dto.FilterRequestDto;
 import org.example.dto.JobDto;
 import org.example.dto.RestResponse;
-import org.example.entity.FilterType;
 import org.example.exceptions.FailedRequestError;
 import org.example.service.JobService;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +16,8 @@ public class JobController {
 
     @GetMapping
     public RestResponse getJobs(@RequestBody FilterRequestDto filterRequestDto) {
-        if (filterRequestDto.getFilterType().equals(FilterType.SKILL)) {
-            return RestResponse.generateSuccessfulResponse(jobService.getDtoListBySkills());
+        if (filterRequestDto != null) {
+            return RestResponse.generateSuccessfulResponse(jobService.getDtoListByFilter(filterRequestDto));
         } else {
             return RestResponse.generateSuccessfulResponse(jobService.getDtoList());
         }
