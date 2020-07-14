@@ -1,6 +1,5 @@
 package org.example.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,13 +16,8 @@ import java.util.List;
 public class JobDto {
     private String name;
     private String description;
-
     private List<Skill> skills;
-
-    @JsonIgnoreProperties("jobs")
     private UserDto employer;
-    @JsonIgnoreProperties("jobs")
     private UserDto freelancer;
-
     private Stage stage;
 }
