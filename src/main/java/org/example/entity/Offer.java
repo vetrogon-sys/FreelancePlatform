@@ -10,6 +10,7 @@ import javax.persistence.*;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "offers")
 public class Offer {
 
     @Id
@@ -24,5 +25,6 @@ public class Offer {
     @JoinColumn(name = "job_id")
     private Job job;
 
+    @Enumerated(EnumType.STRING)
     private State state;
 }

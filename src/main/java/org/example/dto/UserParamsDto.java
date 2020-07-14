@@ -11,5 +11,7 @@ public class UserParamsDto {
 
     private String name;
     private String surname;
+    private String imgSrc;
     private List<Skill> skills = new ArrayList<>();
+
 }

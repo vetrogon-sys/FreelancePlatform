@@ -30,4 +30,23 @@ public class Freelancer extends User {
 
     @OneToMany(mappedBy = "freelancer", fetch = FetchType.LAZY)
     private List<Job> jobs = new ArrayList<>();
+
+    @OneToMany(mappedBy = "freelancer")
+    private List<Review> reviews = new ArrayList<>();
+
+    @Column(name = "Rating")
+    private Double rating = 0.0;
+
+    public static void updateRating(Freelancer freelancer) {
+        if (freelancer.getRating() == null) {
+            freelancer.setRating(freelancer.getReviews()
+                    .get(0)
+                    .getScore());
+        } else {
+            freelancer.setRating(freelancer.getReviews()
+                    .stream()
+                    .mapToDouble(Review::getScore)
+                    .average().orElse(Double.NaN));
+        }
+    }
 }

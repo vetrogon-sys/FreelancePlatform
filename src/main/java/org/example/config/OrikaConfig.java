@@ -9,6 +9,14 @@ public class OrikaConfig {
     private static final MapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
 
     public static MapperFactory getMapperFactory() {
+        mapperFactory.classMap(Employer.class, UserProfileDto.class)
+                .byDefault()
+                .register();
+
+        mapperFactory.classMap(Freelancer.class, UserProfileDto.class)
+                .byDefault()
+                .register();
+
         mapperFactory.classMap(Employer.class, UserDto.class)
                 .byDefault()
                 .register();
@@ -17,17 +25,11 @@ public class OrikaConfig {
                 .byDefault()
                 .register();
 
-        mapperFactory.classMap(Employer.class, UserParamsDto.class)
-                .byDefault()
-                .register();
-
-        mapperFactory.classMap(Freelancer.class, UserParamsDto.class)
+        mapperFactory.classMap(Review.class, ReviewDto.class)
                 .byDefault()
                 .register();
 
         mapperFactory.classMap(Job.class, JobDto.class)
-                .field("employer", "employer")
-                .field("freelancer", "freelancer")
                 .byDefault()
                 .register();
 

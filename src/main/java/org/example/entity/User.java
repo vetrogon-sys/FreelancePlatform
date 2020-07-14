@@ -32,6 +32,8 @@ public abstract class User {
     @Column(name = "created_on")
     private LocalDateTime createdOn;
 
+    private String imgSrc;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "USER_AUTHORITY",
