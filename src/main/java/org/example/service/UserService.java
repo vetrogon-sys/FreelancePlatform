@@ -2,8 +2,8 @@ package org.example.service;
 
 import org.example.dto.FilterRequestDto;
 import org.example.dto.LoginDto;
-import org.example.dto.UserProfileDto;
 import org.example.dto.UserParamsDto;
+import org.example.dto.UserProfileDto;
 import org.example.entity.User;
 import org.example.exceptions.FailedRequestError;
 import org.springframework.data.domain.Pageable;
