@@ -1,6 +1,9 @@
 package org.example.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
@@ -8,6 +11,6 @@ import lombok.*;
 @NoArgsConstructor
 public class OfferDto {
 
-    private UserDto freelancer;
+    private UserProfileDto freelancer;
     private JobDto job;
 }

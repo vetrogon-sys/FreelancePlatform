@@ -12,12 +12,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDto {
-
     private String login;
     private String name;
     private String surname;
     private LocalDateTime createdOn;
+    private Double score;
     private List<Skill> skills;
-
-    private List<JobDto> jobs;
 }
