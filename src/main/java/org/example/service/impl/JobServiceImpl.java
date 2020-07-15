@@ -17,8 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -31,18 +29,13 @@ public class JobServiceImpl implements JobService {
         List<Job> jobs;
 
         if (filterRequestDto.getSkills() == null) {
-            jobs = StreamSupport.stream(jobRepository.findAll().spliterator(), false)
-                    .collect(Collectors.toList());
+            jobs = jobRepository.findAllByStage(Stage.POSTED);
         } else {
-            jobs = jobRepository.findBySkillsIn(filterRequestDto.getSkills(), pageable);
+            jobs = jobRepository.findBySkillsInAndStage(filterRequestDto.getSkills(), Stage.POSTED, pageable);
         }
 
-        return jobs.stream()
-                .filter(e -> e.getStage().equals(Stage.POSTED))
-                .map(e -> OrikaConfig.getMapperFactory()
-                        .getMapperFacade()
-                        .map(e, JobDto.class))
-                .collect(Collectors.toList());
+        return OrikaConfig.getMapperFacade()
+                .mapAsList(jobs, JobDto.class);
     }
 
 
@@ -50,7 +43,7 @@ public class JobServiceImpl implements JobService {
     public JobDto getDtoById(Long id) throws FailedRequestError {
         Job job = jobRepository.findById(id).orElse(null);
         if (job != null) {
-            return OrikaConfig.getMapperFactory()
+            return OrikaConfig
                     .getMapperFacade()
                     .map(job, JobDto.class);
         } else {
@@ -62,7 +55,7 @@ public class JobServiceImpl implements JobService {
     public void create(JobDto jobDto) throws FailedRequestError {
         User currentUser = userService.getUserFromSecurityContext();
         if (currentUser.getClass().equals(Employer.class)) {
-            Job job = OrikaConfig.getMapperFactory()
+            Job job = OrikaConfig
                     .getMapperFacade()
                     .map(jobDto, Job.class);
             job.setStage(Stage.POSTED);

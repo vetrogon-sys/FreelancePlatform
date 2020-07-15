@@ -1,5 +1,6 @@
 package org.example.config;
 
+import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import org.example.dto.*;
@@ -8,7 +9,7 @@ import org.example.entity.*;
 public class OrikaConfig {
     private static final MapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
 
-    public static MapperFactory getMapperFactory() {
+    private static MapperFactory getMapperFactory() {
         mapperFactory.classMap(Employer.class, UserProfileDto.class)
                 .byDefault()
                 .register();
@@ -38,5 +39,9 @@ public class OrikaConfig {
                 .register();
 
         return mapperFactory;
+    }
+
+    public static MapperFacade getMapperFacade() {
+        return getMapperFactory().getMapperFacade();
     }
 }

@@ -38,15 +38,10 @@ public class Freelancer extends User {
     private Double rating = 0.0;
 
     public static void updateRating(Freelancer freelancer) {
-        if (freelancer.getRating() == null) {
-            freelancer.setRating(freelancer.getReviews()
-                    .get(0)
-                    .getScore());
-        } else {
-            freelancer.setRating(freelancer.getReviews()
-                    .stream()
-                    .mapToDouble(Review::getScore)
-                    .average().orElse(Double.NaN));
-        }
+        freelancer.setRating(freelancer.getReviews()
+                .stream()
+                .mapToDouble(Review::getScore)
+                .average().orElse(0.0));
+
     }
 }

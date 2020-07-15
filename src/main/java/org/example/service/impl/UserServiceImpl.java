@@ -12,7 +12,6 @@ import org.example.entity.Freelancer;
 import org.example.entity.User;
 import org.example.exceptions.FailedRequestError;
 import org.example.repository.AuthorityRepository;
-import org.example.repository.SkillRepository;
 import org.example.repository.UserRepository;
 import org.example.service.UserService;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +19,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.imageio.ImageIO;
 import javax.transaction.Transactional;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +42,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
     private final AuthorityRepository authorityRepository;
-    private final SkillRepository skillRepository;
 
     @Override
     public Optional<User> findByLogin(String login) {
@@ -84,13 +90,38 @@ public class UserServiceImpl implements UserService {
         if (currentUser != null) {
             currentUser.setName(userParamsDto.getName());
             currentUser.setSurname(userParamsDto.getSurname());
-            currentUser.setImgSrc(userParamsDto.getImgSrc());
+
+            if (!userParamsDto.getFileSrc().isEmpty()) {
+                saveImg(userParamsDto.getFileSrc(), currentUser);
+            }
+
             if (currentUser.getClass().equals(Freelancer.class)) {
                 ((Freelancer) currentUser).setSkills(userParamsDto.getSkills());
             }
             userRepository.save(currentUser);
         } else {
             throw new FailedRequestError("is not logged users");
+        }
+    }
+
+    private void saveImg(String fileSrc, User user) throws FailedRequestError {
+        try {
+            Path path = Paths.get(fileSrc);
+            byte[] fileBytes = Files.readAllBytes(path);
+            BufferedImage image = ImageIO.read(new ByteArrayInputStream(fileBytes));
+
+            String imgSrc = "src" +
+                    "\\main" +
+                    "\\resources" +
+                    "\\img" +
+                    "\\users_" + user.getId()
+                    + "_avatarImg.jpg";
+            File destination = new File(imgSrc);
+            ImageIO.write(image, "jpg", destination);
+
+            user.setImgSrc(imgSrc);
+        } catch (IOException e) {
+            throw new FailedRequestError("Fie load is failed");
         }
     }
 
@@ -107,7 +138,7 @@ public class UserServiceImpl implements UserService {
     public UserProfileDto getDtoById(Long id) throws FailedRequestError {
         User user = userRepository.findById(id).orElse(null);
         if (user != null) {
-            return OrikaConfig.getMapperFactory()
+            return OrikaConfig
                     .getMapperFacade()
                     .map(user, UserProfileDto.class);
         } else {
@@ -119,7 +150,7 @@ public class UserServiceImpl implements UserService {
     public UserProfileDto getCurrentDto() throws FailedRequestError {
         User currentUser = getUserFromSecurityContext();
         if (currentUser != null) {
-            return OrikaConfig.getMapperFactory()
+            return OrikaConfig
                     .getMapperFacade()
                     .map(currentUser, UserProfileDto.class);
         } else {
@@ -152,11 +183,9 @@ public class UserServiceImpl implements UserService {
                     .collect(Collectors.toList());
         }
 
-        return freelancerList.stream()
-                .map(e -> OrikaConfig.getMapperFactory()
-                        .getMapperFacade()
-                        .map(e, UserProfileDto.class))
-                .collect(Collectors.toList());
+        return OrikaConfig
+                .getMapperFacade()
+                .mapAsList(freelancerList, UserProfileDto.class);
     }
 
     @Override

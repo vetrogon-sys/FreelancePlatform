@@ -13,7 +13,6 @@ import org.example.service.UserService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +25,7 @@ public class ReviewServiceImpl implements ReviewService {
         Employer employer = (Employer) userService.getUserFromSecurityContext();
         Freelancer freelancer = (Freelancer) userService.findById(freelancerId).orElse(null);
         if (employer != null && freelancer != null) {
-            Review review = OrikaConfig.getMapperFactory()
+            Review review = OrikaConfig
                     .getMapperFacade()
                     .map(reviewDto, Review.class);
             review.setEmployer(employer);
@@ -44,11 +43,9 @@ public class ReviewServiceImpl implements ReviewService {
     public List<ReviewDto> getReviewListById(Long userId) throws FailedRequestError {
         Employer employer = (Employer) userService.findById(userId).orElse(null);
         if (employer != null) {
-            return employer.getReviews().stream()
-                    .map(e -> OrikaConfig.getMapperFactory()
-                            .getMapperFacade()
-                            .map(e, ReviewDto.class))
-                    .collect(Collectors.toList());
+            return OrikaConfig
+                    .getMapperFacade()
+                    .mapAsList(employer.getReviews(), ReviewDto.class);
         } else {
             throw new FailedRequestError("Is not user with same id");
         }
