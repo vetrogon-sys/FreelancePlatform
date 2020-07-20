@@ -24,4 +24,7 @@ public class Employer extends User {
 
     @OneToMany(mappedBy = "employer", fetch = FetchType.LAZY)
     private List<Job> jobs = new ArrayList<>();
+
+    @OneToMany(mappedBy = "employer")
+    private List<Review> reviews = new ArrayList<>();
 }

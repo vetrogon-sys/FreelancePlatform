@@ -35,6 +35,7 @@ public class Job {
     @JoinColumn(name = "freelancer_id")
     private Freelancer freelancer;
 
+    @Enumerated(EnumType.STRING)
     private Stage stage;
 
     @Column(name = "create_on")

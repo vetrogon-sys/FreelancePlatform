@@ -22,9 +22,7 @@ logging:
 jwt:
   header: Authorization
   key: blaba
-   # token is valid 24 hours
   token-validity-in-seconds: 99999999999
-  # valid 30 hours
   token-validity-in-seconds-for-remember-me: 108000
   route:
     authentication:

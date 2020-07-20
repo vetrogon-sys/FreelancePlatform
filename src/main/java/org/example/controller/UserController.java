@@ -6,6 +6,9 @@ import org.example.dto.RestResponse;
 import org.example.dto.UserParamsDto;
 import org.example.exceptions.FailedRequestError;
 import org.example.service.UserService;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,7 +18,8 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{id}")
-    public RestResponse getCurrentUser(@PathVariable Long id) {
+    @PreAuthorize("authenticated()")
+    public RestResponse getUserByID(@PathVariable Long id) {
         try {
             return RestResponse.generateSuccessfulResponse(userService.getDtoById(id));
         } catch (FailedRequestError error) {
@@ -23,15 +27,29 @@ public class UserController {
         }
     }
 
-    @GetMapping("/freelancers")
-    public RestResponse getFreelancers(@RequestBody FilterRequestDto filterRequestDto) {
-        return RestResponse.generateSuccessfulResponse(userService.getFreelancerDtoList(filterRequestDto));
+    @GetMapping("/current")
+    @PreAuthorize("authenticated()")
+    public RestResponse getCurrentUser() {
+        try {
+            return RestResponse.generateSuccessfulResponse(userService.getCurrentDto());
+        } catch (FailedRequestError error) {
+            return RestResponse.generateFailedResponse(error.getMessage());
+        }
     }
 
-    @PutMapping("/{id}")
-    public RestResponse updateUser(@RequestBody UserParamsDto userParamsDto, @PathVariable Long id) {
+    @GetMapping("/freelancers")
+    @PreAuthorize("hasRole('EMPLOYER')")
+    public RestResponse getFreelancers(@RequestBody FilterRequestDto filterRequestDto,
+                                       @PageableDefault(page = 0, size = 20)
+                                               Pageable pageable) {
+        return RestResponse.generateSuccessfulResponse(userService.getFreelancerDtoByFilter(filterRequestDto, pageable));
+    }
+
+    @PutMapping("/current")
+    @PreAuthorize("authenticated()")
+    public RestResponse updateUser(@RequestBody UserParamsDto userParamsDto) {
         try {
-            userService.update(userParamsDto, id);
+            userService.update(userParamsDto);
             return RestResponse.generateSuccessfulResponse("Updated");
         } catch (FailedRequestError error) {
             return RestResponse.generateFailedResponse(error.getMessage());

@@ -6,6 +6,11 @@ import org.example.dto.JobDto;
 import org.example.dto.RestResponse;
 import org.example.exceptions.FailedRequestError;
 import org.example.service.JobService;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,12 +20,11 @@ public class JobController {
     private final JobService jobService;
 
     @GetMapping
-    public RestResponse getJobs(@RequestBody FilterRequestDto filterRequestDto) {
-        if (filterRequestDto != null) {
-            return RestResponse.generateSuccessfulResponse(jobService.getDtoListByFilter(filterRequestDto));
-        } else {
-            return RestResponse.generateSuccessfulResponse(jobService.getDtoList());
-        }
+    public RestResponse getJobs(@RequestBody FilterRequestDto filterRequestDto,
+                                @PageableDefault(page = 0, size = 20)
+                                @SortDefault(sort = "id", direction = Sort.Direction.ASC)
+                                        Pageable pageable) {
+        return RestResponse.generateSuccessfulResponse(jobService.getDtoListByFilter(filterRequestDto, pageable));
     }
 
     @GetMapping("/{id}")
@@ -33,6 +37,7 @@ public class JobController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYER')")
     public RestResponse closeJob(@PathVariable Long id,
                                  @RequestBody boolean isPerformed) {
         try {
@@ -44,6 +49,7 @@ public class JobController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('EMPLOYER')")
     public RestResponse createJob(@RequestBody JobDto jobDto) {
         try {
             jobService.create(jobDto);

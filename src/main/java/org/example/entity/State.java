@@ -1,7 +1,12 @@
 package org.example.entity;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 public enum  State {
-    EXPECTATION,
-    REJECTED,
-    CONFIRMED;
+    EXPECTATION("Ожидание"),
+    REJECTED("Отказано"),
+    CONFIRMED("Подтверждено");
+
+    private String name;
 }
