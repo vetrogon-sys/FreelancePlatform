@@ -29,7 +29,7 @@ public class JobServiceImpl implements JobService {
         List<Job> jobs;
 
         if (filterRequestDto.getSkills() == null) {
-            jobs = jobRepository.findAllByStage(Stage.POSTED);
+            jobs = jobRepository.findAllByStage(Stage.POSTED, pageable);
         } else {
             jobs = jobRepository.findBySkillsInAndStage(filterRequestDto.getSkills(), Stage.POSTED, pageable);
         }
@@ -54,17 +54,19 @@ public class JobServiceImpl implements JobService {
     @Override
     public void create(JobDto jobDto) throws FailedRequestError {
         User currentUser = userService.getUserFromSecurityContext();
-        if (currentUser.getClass().equals(Employer.class)) {
-            Job job = OrikaConfig
-                    .getMapperFacade()
-                    .map(jobDto, Job.class);
-            job.setStage(Stage.POSTED);
-            job.setEmployer((Employer) currentUser);
-            job.setCreatedOn(LocalDateTime.now().withNano(0));
-            jobRepository.save(job);
-        } else {
+        if (currentUser == null
+                || !Employer.class.equals(currentUser.getClass())) {
+
             throw new FailedRequestError("only employer can create job");
         }
+
+        Job job = OrikaConfig
+                .getMapperFacade()
+                .map(jobDto, Job.class);
+        job.setStage(Stage.POSTED);
+        job.setEmployer((Employer) currentUser);
+        job.setCreatedOn(LocalDateTime.now().withNano(0));
+        jobRepository.save(job);
     }
 
     @Override

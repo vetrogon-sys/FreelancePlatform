@@ -79,6 +79,12 @@ public class UserServiceImpl implements UserService {
                     .authorities(Collections.singletonList(authority))
                     .build();
         }
+        user.setImgSrc("src" +
+                "\\main" +
+                "\\resources" +
+                "\\img" +
+                "\\common" +
+                "\\standard_user_avatar.jpg");
         user.setCreatedOn(LocalDateTime.now().withNano(0));
         userRepository.save(user);
         return true;
@@ -120,6 +126,7 @@ public class UserServiceImpl implements UserService {
             ImageIO.write(image, "jpg", destination);
 
             user.setImgSrc(imgSrc);
+
         } catch (IOException e) {
             throw new FailedRequestError("Fie load is failed");
         }
@@ -127,9 +134,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void update(Object object) {
-        if (object.getClass().equals(Freelancer.class)) {
+        if (Freelancer.class.equals(object.getClass())) {
             userRepository.save((Freelancer) object);
-        } else if (object.getClass().equals(Employer.class)) {
+        } else if (Employer.class.equals(object.getClass())) {
             userRepository.save((Employer) object);
         }
     }
@@ -164,12 +171,7 @@ public class UserServiceImpl implements UserService {
 
         if (filterRequestDto.getSkills() != null
                 && filterRequestDto.getRating() != null) {
-            List<Freelancer> skillList = userRepository.findBySkillsIn(filterRequestDto.getSkills(), pageable);
-            List<Freelancer> ratingList = userRepository.findByRating(filterRequestDto.getRating(), pageable);
-            freelancerList = skillList.stream()
-                    .filter(ratingList::contains)
-                    .collect(Collectors.toList());
-
+            freelancerList = userRepository.findByRatingAndSkillsIn(filterRequestDto.getRating(), filterRequestDto.getSkills(), pageable);
         } else if (filterRequestDto.getSkills() != null) {
             freelancerList = userRepository.findBySkillsIn(filterRequestDto.getSkills(), pageable);
         } else if (filterRequestDto.getRating() != null) {
@@ -178,7 +180,7 @@ public class UserServiceImpl implements UserService {
             freelancerList = StreamSupport.stream(userRepository.findAll().spliterator(), false)
                     .collect(Collectors.toList())
                     .stream()
-                    .filter(e -> e.getClass().equals(Freelancer.class))
+                    .filter(e -> Freelancer.class.equals(e.getClass()))
                     .map(e -> (Freelancer) e)
                     .collect(Collectors.toList());
         }
@@ -191,6 +193,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserFromSecurityContext() {
         return userRepository.findByLogin(((org.springframework.security.core.userdetails.User)
-                SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername()).orElseThrow(() -> new IllegalArgumentException("meeasge"));
+                SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername()).orElseThrow(() -> new IllegalArgumentException("Only logged user can do it"));
     }
 }

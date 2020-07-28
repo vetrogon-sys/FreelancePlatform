@@ -20,9 +20,9 @@ public class JobController {
     private final JobService jobService;
 
     @GetMapping
-    public RestResponse getJobs(@RequestBody(required = false) FilterRequestDto filterRequestDto,
+    public RestResponse getJobs(@RequestBody FilterRequestDto filterRequestDto,
                                 @PageableDefault(page = 0, size = 20)
-                                @SortDefault(sort = "id", direction = Sort.Direction.ASC)
+                                @SortDefault(sort = "createdOn", direction = Sort.Direction.ASC)
                                         Pageable pageable) {
         return RestResponse.generateSuccessfulResponse(jobService.getDtoListByFilter(filterRequestDto, pageable));
     }

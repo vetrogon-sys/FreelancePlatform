@@ -22,8 +22,14 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public void create(ReviewDto reviewDto, Long freelancerId) throws FailedRequestError {
-        Employer employer = (Employer) userService.getUserFromSecurityContext();
-        Freelancer freelancer = (Freelancer) userService.findById(freelancerId).orElse(null);
+        Employer employer;
+        Freelancer freelancer;
+        try {
+            employer = (Employer) userService.getUserFromSecurityContext();
+            freelancer = (Freelancer) userService.findById(freelancerId).orElse(null);
+        } catch (ClassCastException ignored) {
+            throw new FailedRequestError("Invalid request");
+        }
         if (employer != null && freelancer != null) {
             Review review = OrikaConfig
                     .getMapperFacade()
