@@ -77,8 +77,12 @@
             <artifactId>mockito-core</artifactId>
             <version>3.4.4</version>
             <scope>test</scope>
-        </dependency>
 
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>RELEASE</version>
+            <scope>compile</scope>
+        </dependency?
     </dependencies>
     <build>
         <plugins>

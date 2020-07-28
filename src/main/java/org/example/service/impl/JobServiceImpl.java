@@ -56,6 +56,7 @@ public class JobServiceImpl implements JobService {
         User currentUser = userService.getUserFromSecurityContext();
         if (currentUser == null
                 || !Employer.class.equals(currentUser.getClass())) {
+
             throw new FailedRequestError("only employer can create job");
         }
 

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,6 +45,7 @@ public class UserController {
     public RestResponse getFreelancers(@RequestBody FilterRequestDto filterRequestDto,
                                        @PageableDefault(page = 0, size = 20)
                                        @SortDefault(sort = "createdOn", direction = Sort.Direction.ASC)
+
                                                Pageable pageable) {
         return RestResponse.generateSuccessfulResponse(userService.getFreelancerDtoByFilter(filterRequestDto, pageable));
     }
