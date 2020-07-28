@@ -134,9 +134,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void update(Object object) {
-        if (object.getClass().equals(Freelancer.class)) {
+        if (Freelancer.class.equals(object.getClass())) {
             userRepository.save((Freelancer) object);
-        } else if (object.getClass().equals(Employer.class)) {
+        } else if (Employer.class.equals(object.getClass())) {
             userRepository.save((Employer) object);
         }
     }
@@ -171,12 +171,7 @@ public class UserServiceImpl implements UserService {
 
         if (filterRequestDto.getSkills() != null
                 && filterRequestDto.getRating() != null) {
-            List<Freelancer> skillList = userRepository.findBySkillsIn(filterRequestDto.getSkills(), pageable);
-            List<Freelancer> ratingList = userRepository.findByRating(filterRequestDto.getRating(), pageable);
-            freelancerList = skillList.stream()
-                    .filter(ratingList::contains)
-                    .collect(Collectors.toList());
-
+            freelancerList = userRepository.findByRatingAndSkillsIn(filterRequestDto.getRating(), filterRequestDto.getSkills(), pageable);
         } else if (filterRequestDto.getSkills() != null) {
             freelancerList = userRepository.findBySkillsIn(filterRequestDto.getSkills(), pageable);
         } else if (filterRequestDto.getRating() != null) {
@@ -185,23 +180,19 @@ public class UserServiceImpl implements UserService {
             freelancerList = StreamSupport.stream(userRepository.findAll().spliterator(), false)
                     .collect(Collectors.toList())
                     .stream()
-                    .filter(e -> e.getClass().equals(Freelancer.class))
+                    .filter(e -> Freelancer.class.equals(e.getClass()))
                     .map(e -> (Freelancer) e)
                     .collect(Collectors.toList());
         }
 
-//        return OrikaConfig
-//                .getMapperFacade()
-//                .mapAsList(freelancerList, UserProfileDto.class);
-
-        return freelancerList.stream()
-                .map(e -> OrikaConfig.getMapperFacade().map(e, UserProfileDto.class))
-                .collect(Collectors.toList());
+        return OrikaConfig
+                .getMapperFacade()
+                .mapAsList(freelancerList, UserProfileDto.class);
     }
 
     @Override
     public User getUserFromSecurityContext() {
         return userRepository.findByLogin(((org.springframework.security.core.userdetails.User)
-                SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername()).orElseThrow(() -> new IllegalArgumentException("meeasge"));
+                SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername()).orElseThrow(() -> new IllegalArgumentException("Only logged user can do it"));
     }
 }

@@ -11,5 +11,5 @@ import java.util.List;
 public interface JobRepository extends CrudRepository<Job, Long> {
 
     List<Job> findBySkillsInAndStage(List<Skill> skills, Stage stage, Pageable pageable);
-    List<Job> findAllByStage(Stage stage);
+    List<Job> findAllByStage(Stage stage, Pageable pageable);
 }
