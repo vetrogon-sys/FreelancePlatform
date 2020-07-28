@@ -83,7 +83,7 @@ public class UserServiceImplTest {
     @Test
     public void getDtoById_positiveTest() throws FailedRequestError {
         Freelancer freelancer = Freelancer.builder().id(1L).login("freelancer")
-                .imgSrc("src/main/resources/img/users_1_avatarImg.jpg").build();
+                .imgSrc("src/main/resources/img/common/standard_user_avatar.jpg").build();
         when(userRepository.findById(1L)).thenReturn(Optional.of(freelancer));
 
         UserProfileDto expectedDto = OrikaConfig.getMapperFacade()
@@ -117,11 +117,11 @@ public class UserServiceImplTest {
     public void getFreelancerDtoByFilter_ifFilterIsNull() {
         List<User> testList = Arrays.asList(
                 Employer.builder().id(4L).login("employer").build(),
-                Freelancer.builder().id(1L).login("freelancer1").imgSrc("src/main/resources/img/users_1_avatarImg.jpg")
+                Freelancer.builder().id(1L).login("freelancer1").imgSrc("src/main/resources/img/common/standard_user_avatar.jpg")
                         .rating(1.5).skills(Collections.singletonList(new Skill("skill"))).build(),
-                Freelancer.builder().id(2L).login("freelancer2").imgSrc("src/main/resources/img/users_1_avatarImg.jpg")
+                Freelancer.builder().id(2L).login("freelancer2").imgSrc("src/main/resources/img/common/standard_user_avatar.jpg")
                         .rating(4.5).build(),
-                Freelancer.builder().id(3L).login("freelancer3").imgSrc("src/main/resources/img/users_1_avatarImg.jpg")
+                Freelancer.builder().id(3L).login("freelancer3").imgSrc("src/main/resources/img/common/standard_user_avatar.jpg")
                         .build()
         );
         when(userRepository.findAll()).thenReturn(testList);
@@ -134,9 +134,9 @@ public class UserServiceImplTest {
     @Test
     public void getFreelancerDtoByFilter_ifFilterBySkills() {
         List<Freelancer> testList = Arrays.asList(
-                Freelancer.builder().id(1L).login("freelancer1").imgSrc("src/main/resources/img/users_1_avatarImg.jpg")
+                Freelancer.builder().id(1L).login("freelancer1").imgSrc("src/main/resources/img/common/standard_user_avatar.jpg")
                         .rating(1.5).skills(Collections.singletonList(new Skill("skill"))).build(),
-                Freelancer.builder().id(2L).login("freelancer2").imgSrc("src/main/resources/img/users_1_avatarImg.jpg")
+                Freelancer.builder().id(2L).login("freelancer2").imgSrc("src/main/resources/img/common/standard_user_avatar.jpg")
                         .rating(4.5).skills(Collections.singletonList(new Skill("skill"))).build()
         );
 
@@ -153,9 +153,9 @@ public class UserServiceImplTest {
     @Test
     public void getFreelancerDtoByFilter_ifFilterByRating() {
         List<Freelancer> testList = Arrays.asList(
-                Freelancer.builder().id(1L).login("freelancer1").imgSrc("src/main/resources/img/users_1_avatarImg.jpg")
+                Freelancer.builder().id(1L).login("freelancer1").imgSrc("src/main/resources/img/common/standard_user_avatar.jpg")
                         .rating(4.1).build(),
-                Freelancer.builder().id(2L).login("freelancer2").imgSrc("src/main/resources/img/users_1_avatarImg.jpg")
+                Freelancer.builder().id(2L).login("freelancer2").imgSrc("src/main/resources/img/common/standard_user_avatar.jpg")
                         .rating(4.5).build()
         );
 
@@ -172,9 +172,9 @@ public class UserServiceImplTest {
     @Test
     public void getFreelancerDtoByFilter_ifFilterBySkillsAndRating() {
         List<Freelancer> testList = Arrays.asList(
-                Freelancer.builder().id(1L).login("freelancer1").rating(4.1).imgSrc("src/main/resources/img/users_1_avatarImg.jpg")
+                Freelancer.builder().id(1L).login("freelancer1").rating(4.1).imgSrc("src/main/resources/img/common/standard_user_avatar.jpg")
                         .skills(Collections.singletonList(new Skill("skill"))).build(),
-                Freelancer.builder().id(2L).login("freelancer2").rating(4.5).imgSrc("src/main/resources/img/users_1_avatarImg.jpg")
+                Freelancer.builder().id(2L).login("freelancer2").rating(4.5).imgSrc("src/main/resources/img/common/standard_user_avatar.jpg")
                         .skills(Collections.singletonList(new Skill("skill"))).build()
         );
 
