@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.dto.RestResponse;
 import org.example.exceptions.FailedRequestError;
 import org.example.service.OfferService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,6 +14,7 @@ public class OfferController {
     private final OfferService offerService;
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYER')")
     public RestResponse confirmOffer(@PathVariable Long id, @PathVariable Long jobId) {
         try {
             offerService.confirm(jobId, id);
@@ -23,6 +25,7 @@ public class OfferController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('EMPLOYER')")
     public RestResponse getOffers(@PathVariable Long jobId) {
         try {
             return RestResponse.generateSuccessfulResponse(offerService.getDtoList(jobId));
@@ -32,6 +35,7 @@ public class OfferController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYER')")
     public RestResponse getOfferById(@PathVariable Long id, @PathVariable Long jobId) {
         try {
             return RestResponse.generateSuccessfulResponse(offerService.getDtoById(jobId, id));
@@ -41,6 +45,7 @@ public class OfferController {
     }
 
     @PostMapping()
+    @PreAuthorize("hasRole('FREELANCER')")
     public RestResponse createOffer(@PathVariable Long jobId) {
         try {
             offerService.create(jobId);

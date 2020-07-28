@@ -11,10 +11,7 @@ import org.example.service.OfferService;
 import org.example.service.UserService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -31,9 +28,7 @@ public class OfferServiceImpl implements OfferService {
             if (offer != null) {
                 job.setStage(Stage.IN_DEVELOPING);
                 job.setFreelancer(offer.getFreelancer());
-
-                List<Offer> offers = StreamSupport.stream(offerRepository.findAll().spliterator(), false)
-                        .collect(Collectors.toList());
+                List<Offer> offers = offerRepository.findAllByJob(job);
 
                 for (Offer off : offers) {
                     if (off.getJob().equals(job)) {
@@ -47,10 +42,10 @@ public class OfferServiceImpl implements OfferService {
                 offerRepository.saveAll(offers);
                 jobRepository.save(job);
             } else {
-                throw new FailedRequestError("is not offer with same id");
+                throw new FailedRequestError("there is not offer with same id");
             }
         } else {
-            throw new FailedRequestError("is not job with same id");
+            throw new FailedRequestError("there is not job with same id");
         }
     }
 
@@ -59,7 +54,9 @@ public class OfferServiceImpl implements OfferService {
         if (jobRepository.existsById(jobId)) {
             Offer offer = offerRepository.findById(offerId).orElse(null);
             if (offer != null) {
-                return OrikaConfig.getMapperFactory().getMapperFacade().map(offer, OfferDto.class);
+                return OrikaConfig
+                        .getMapperFacade()
+                        .map(offer, OfferDto.class);
             } else {
                 throw new FailedRequestError("there is not offer with same id");
             }
@@ -72,31 +69,24 @@ public class OfferServiceImpl implements OfferService {
     public List<OfferDto> getDtoList(Long jobId) throws FailedRequestError {
         Job job = jobRepository.findById(jobId).orElse(null);
         if (job != null) {
-            List<Offer> offers = StreamSupport.stream(offerRepository.findAll().spliterator(), false)
-                    .collect(Collectors.toList());
+            List<Offer> offers = offerRepository.findAllByJob(job);
 
-            List<OfferDto> offerDtoList = new ArrayList<>();
-
-            for (Offer offer: offers) {
-                if (offer.getJob().getId().equals(jobId)) {
-                    offerDtoList.add(OrikaConfig.getMapperFactory()
-                            .getMapperFacade()
-                            .map(offer, OfferDto.class));
-                }
-            }
-            return offerDtoList;
+            return OrikaConfig
+                    .getMapperFacade()
+                    .mapAsList(offers, OfferDto.class);
         } else {
-            throw new FailedRequestError("is not job with same id");
+            throw new FailedRequestError("there is not job with same id");
         }
     }
 
     @Override
     public void create(Long jobId) throws FailedRequestError {
         User user = userService.getUserFromSecurityContext();
-        if (user.getClass().equals(Freelancer.class)) {
+        if (user != null
+                && Freelancer.class.equals(user.getClass())) {
             Job job = jobRepository.findById(jobId).orElse(null);
             if (job != null) {
-                if (job.getStage().equals(Stage.POSTED)) {
+                if (Stage.POSTED.equals(job.getStage())) {
                     offerRepository.save(Offer.builder()
                             .job(job)
                             .freelancer((Freelancer) user)

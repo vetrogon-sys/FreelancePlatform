@@ -4,22 +4,31 @@ import lombok.RequiredArgsConstructor;
 import org.example.config.OrikaConfig;
 import org.example.dto.FilterRequestDto;
 import org.example.dto.LoginDto;
-import org.example.dto.UserDto;
 import org.example.dto.UserParamsDto;
-import org.example.entity.*;
+import org.example.dto.UserProfileDto;
+import org.example.entity.Authority;
+import org.example.entity.Employer;
+import org.example.entity.Freelancer;
+import org.example.entity.User;
 import org.example.exceptions.FailedRequestError;
 import org.example.repository.AuthorityRepository;
-import org.example.repository.SkillRepository;
 import org.example.repository.UserRepository;
 import org.example.service.UserService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.imageio.ImageIO;
 import javax.transaction.Transactional;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -33,11 +42,15 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
     private final AuthorityRepository authorityRepository;
-    private final SkillRepository skillRepository;
 
     @Override
     public Optional<User> findByLogin(String login) {
         return userRepository.findByLogin(login);
+    }
+
+    @Override
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
     }
 
     @Override
@@ -66,77 +79,120 @@ public class UserServiceImpl implements UserService {
                     .authorities(Collections.singletonList(authority))
                     .build();
         }
+        user.setImgSrc("src" +
+                "\\main" +
+                "\\resources" +
+                "\\img" +
+                "\\common" +
+                "\\standard_user_avatar.jpg");
         user.setCreatedOn(LocalDateTime.now().withNano(0));
         userRepository.save(user);
         return true;
     }
 
     @Override
-    public void update(UserParamsDto userParamsDto, Long userId) throws FailedRequestError {
+    public void update(UserParamsDto userParamsDto) throws FailedRequestError {
         User currentUser = getUserFromSecurityContext();
-        if (currentUser.getId().equals(userId)) {
+        if (currentUser != null) {
             currentUser.setName(userParamsDto.getName());
             currentUser.setSurname(userParamsDto.getSurname());
+
+            if (!userParamsDto.getFileSrc().isEmpty()) {
+                saveImg(userParamsDto.getFileSrc(), currentUser);
+            }
+
             if (currentUser.getClass().equals(Freelancer.class)) {
                 ((Freelancer) currentUser).setSkills(userParamsDto.getSkills());
             }
             userRepository.save(currentUser);
         } else {
-            throw new FailedRequestError("Attempt to change another user");
+            throw new FailedRequestError("is not logged users");
+        }
+    }
+
+    private void saveImg(String fileSrc, User user) throws FailedRequestError {
+        try {
+            Path path = Paths.get(fileSrc);
+            byte[] fileBytes = Files.readAllBytes(path);
+            BufferedImage image = ImageIO.read(new ByteArrayInputStream(fileBytes));
+
+            String imgSrc = "src" +
+                    "\\main" +
+                    "\\resources" +
+                    "\\img" +
+                    "\\users_" + user.getId()
+                    + "_avatarImg.jpg";
+            File destination = new File(imgSrc);
+            ImageIO.write(image, "jpg", destination);
+
+            user.setImgSrc(imgSrc);
+
+        } catch (IOException e) {
+            throw new FailedRequestError("Fie load is failed");
         }
     }
 
     @Override
-    public UserDto getDtoById(Long id) throws FailedRequestError {
-        User currentUser = getUserFromSecurityContext();
-        if (currentUser.getId().equals(id)) {
-            return OrikaConfig.getMapperFactory()
+    public void update(Object object) {
+        if (Freelancer.class.equals(object.getClass())) {
+            userRepository.save((Freelancer) object);
+        } else if (Employer.class.equals(object.getClass())) {
+            userRepository.save((Employer) object);
+        }
+    }
+
+    @Override
+    public UserProfileDto getDtoById(Long id) throws FailedRequestError {
+        User user = userRepository.findById(id).orElse(null);
+        if (user != null) {
+            return OrikaConfig
                     .getMapperFacade()
-                    .map(currentUser, UserDto.class);
+                    .map(user, UserProfileDto.class);
         } else {
-            throw new FailedRequestError("isn't logged users");
+            throw new FailedRequestError("is not user with same id");
         }
     }
 
     @Override
-    public List<UserDto> getFreelancerDtoList(FilterRequestDto filterRequestDto) {
-        List<Freelancer> freelancerList = StreamSupport.stream(userRepository.findAll().spliterator(), false)
-                .filter(e -> e.getClass().equals(Freelancer.class))
-                .map(e -> (Freelancer) e)
-                .collect(Collectors.toList());
+    public UserProfileDto getCurrentDto() throws FailedRequestError {
+        User currentUser = getUserFromSecurityContext();
+        if (currentUser != null) {
+            return OrikaConfig
+                    .getMapperFacade()
+                    .map(currentUser, UserProfileDto.class);
+        } else {
+            throw new FailedRequestError("is not logged users");
+        }
+    }
 
-        List<Freelancer> filteredFreelancersList = new ArrayList<>();
-        if (filterRequestDto.getFilterType().equals(FilterType.SKILL)) {
-            Skill skill = skillRepository.findById(filterRequestDto.getValue()).orElse(null);
-            filteredFreelancersList = freelancerList.stream()
-                    .filter(e -> e.getSkills().contains(skill))
+    @Override
+    public List<UserProfileDto> getFreelancerDtoByFilter(FilterRequestDto filterRequestDto, Pageable pageable) {
+        List<Freelancer> freelancerList;
+
+        if (filterRequestDto.getSkills() != null
+                && filterRequestDto.getRating() != null) {
+            freelancerList = userRepository.findByRatingAndSkillsIn(filterRequestDto.getRating(), filterRequestDto.getSkills(), pageable);
+        } else if (filterRequestDto.getSkills() != null) {
+            freelancerList = userRepository.findBySkillsIn(filterRequestDto.getSkills(), pageable);
+        } else if (filterRequestDto.getRating() != null) {
+            freelancerList = userRepository.findByRating(filterRequestDto.getRating(), pageable);
+        } else {
+            freelancerList = StreamSupport.stream(userRepository.findAll().spliterator(), false)
+                    .collect(Collectors.toList())
+                    .stream()
+                    .filter(e -> Freelancer.class.equals(e.getClass()))
+                    .map(e -> (Freelancer) e)
                     .collect(Collectors.toList());
-        } else if (filterRequestDto.getFilterType().equals(FilterType.REGISTRATION_DATE)) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-            LocalDateTime localDateTime = LocalDateTime.parse(filterRequestDto.getValue(), formatter);
-
-            if (filterRequestDto.getParam() > 0) {
-                filteredFreelancersList = freelancerList.stream()
-                        .filter(e -> e.getCreatedOn().isAfter(localDateTime))
-                        .collect(Collectors.toList());
-            } else if (filterRequestDto.getParam() < 0) {
-                filteredFreelancersList = freelancerList.stream()
-                        .filter(e -> e.getCreatedOn().isBefore(localDateTime))
-                        .collect(Collectors.toList());
-            }
-
         }
 
-        return filteredFreelancersList.stream()
-                .map(e -> OrikaConfig.getMapperFactory()
-                        .getMapperFacade()
-                        .map(e, UserDto.class))
-                .collect(Collectors.toList());
+        return OrikaConfig
+                .getMapperFacade()
+                .mapAsList(freelancerList, UserProfileDto.class);
     }
 
     @Override
     public User getUserFromSecurityContext() {
         return userRepository.findByLogin(((org.springframework.security.core.userdetails.User)
-                SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername()).orElseThrow(() -> new IllegalArgumentException("meeasge"));
+                SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername()).orElseThrow(() -> new IllegalArgumentException("Only logged user can do it"));
     }
 }
