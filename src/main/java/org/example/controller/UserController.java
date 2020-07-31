@@ -43,7 +43,7 @@ public class UserController {
     @PreAuthorize("hasRole('EMPLOYER')")
     public RestResponse getFreelancers(@RequestBody FilterRequestDto filterRequestDto,
                                        @PageableDefault(page = 0, size = 20)
-                                       @SortDefault(sort = "createdOn", direction = Sort.Direction.ASC)
+                                       @SortDefault(sort = "score", direction = Sort.Direction.ASC)
                                                Pageable pageable) {
         return RestResponse.generateSuccessfulResponse(userService.getFreelancerDtoByFilter(filterRequestDto, pageable));
     }

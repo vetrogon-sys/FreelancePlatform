@@ -5,16 +5,15 @@ import org.example.dto.ReviewDto;
 import org.example.entity.Employer;
 import org.example.entity.Freelancer;
 import org.example.entity.Review;
+import org.example.entity.User;
 import org.example.exceptions.FailedRequestError;
 import org.example.repository.ReviewRepository;
-import org.example.service.ReviewService;
 import org.example.service.UserService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,24 +21,22 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
+@RunWith(MockitoJUnitRunner.class)
 public class ReviewServiceTest {
 
-    @MockBean
+    @Mock
     private ReviewRepository reviewRepository;
-    @MockBean
+    @Mock
     private UserService userService;
 
-    @Autowired
-    private ReviewService reviewService;
+    @InjectMocks
+    private ReviewServiceImpl reviewService;
 
     @Test
     public void create_WhenRequestFailed() {
         when(userService.getUserFromSecurityContext()).thenReturn(Freelancer.builder().id(1L).login("freelancer").build());
-        when(userService.findById(1L)).thenReturn(Optional.of(Employer.builder().id(2L).login("employer").build()));
 
         Exception exception = assertThrows(FailedRequestError.class, () ->
                 reviewService.create(new ReviewDto(), 2L));
@@ -49,7 +46,6 @@ public class ReviewServiceTest {
     @Test
     public void create_WhenFreelancerIsNull() {
         when(userService.getUserFromSecurityContext()).thenReturn(Employer.builder().id(1L).login("employer").build());
-        when(userService.findById(1L)).thenReturn(Optional.empty());
 
         Exception exception = assertThrows(FailedRequestError.class, () ->
                 reviewService.create(new ReviewDto(), 2L));
@@ -62,6 +58,8 @@ public class ReviewServiceTest {
         when(userService.findById(2L)).thenReturn(Optional.of(Freelancer.builder().id(2L).login("freelancer").build()));
 
         reviewService.create(new ReviewDto(), 2L);
+        verify(reviewRepository, times(1)).save(any(Review.class));
+        verify(userService, times(1)).update(any(User.class));
     }
 
     @Test
