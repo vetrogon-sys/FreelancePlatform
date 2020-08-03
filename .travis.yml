@@ -6,11 +6,6 @@ dist: trusty
 
 install: true
 script: mvn test
-deploy:
-  provider: heroku
-  api_key:
-    secure: $HEROKU_API_KEY
-  app: freelance-platform-8080
 
 branches:
   only:
