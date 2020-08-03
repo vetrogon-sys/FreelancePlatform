@@ -10,7 +10,7 @@ deploy:
   provider: heroku
   app: freelance-platform-8080
   api_key:
-    secure: 938b1279-2efa-45fc-a9f3-1b206d1786bd
+    secure: $HEROKU_API_KEY
 
 branches:
   only:
