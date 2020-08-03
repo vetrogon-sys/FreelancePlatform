@@ -5,6 +5,7 @@ jdk: oraclejdk8
 dist: trusty
 
 install: true
+script: mvn test
 deploy:
   provider: heroku
   app: freelance-platform-8080
