@@ -11,8 +11,6 @@ deploy:
   api_key:
     secure: 938b1279-2efa-45fc-a9f3-1b206d1786bd
 
-os: windows
-
 branches:
   only:
     - master
