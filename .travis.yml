@@ -7,9 +7,9 @@ dist: trusty
 install: true
 deploy:
   provider: heroku
-  app: "freelance-platform-8080"
+  app: freelance-platform-8080
   api_key:
-    secure: "938b1279-2efa-45fc-a9f3-1b206d1786bd"
+    secure: 938b1279-2efa-45fc-a9f3-1b206d1786bd
 
 branches:
   only:
