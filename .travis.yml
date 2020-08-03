@@ -4,9 +4,6 @@ language: java
 jdk: oraclejdk8
 
 install: true
-script:
-  - ./mvnw clean install
-  - bash <(curl -s https://codecov.io/bash)
 deploy:
   provider: heroku
   app: freelance-platform-8080
