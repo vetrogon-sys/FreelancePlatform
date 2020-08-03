@@ -15,4 +15,5 @@ public interface UserRepository extends CrudRepository<User, Long> {
     List<Freelancer> findBySkillsIn(List<Skill> skills, Pageable pageable);
     List<Freelancer> findByRating(Double rating, Pageable pageable);
     List<Freelancer> findByRatingAndSkillsIn(Double rating, List<Skill> skills, Pageable pageable);
+
 }

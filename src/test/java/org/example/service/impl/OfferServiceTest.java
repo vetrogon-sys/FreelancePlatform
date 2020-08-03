@@ -7,36 +7,33 @@ import org.example.entity.*;
 import org.example.exceptions.FailedRequestError;
 import org.example.repository.JobRepository;
 import org.example.repository.OfferRepository;
-import org.example.service.OfferService;
 import org.example.service.UserService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
+@RunWith(MockitoJUnitRunner.class)
 public class OfferServiceTest {
 
-    @MockBean
+    @Mock
     private OfferRepository offerRepository;
-    @MockBean
+    @Mock
     private JobRepository jobRepository;
-    @MockBean
+    @Mock
     private UserService userService;
 
-    @Autowired
-    private OfferService offerService;
+    @InjectMocks
+    private OfferServiceImpl offerService;
 
     @Test
     public void confirm_ifJobIsNotPresent() {
@@ -69,6 +66,8 @@ public class OfferServiceTest {
         ));
 
         offerService.confirm(1L, 1L);
+        verify(offerRepository,times(1)).saveAll(anyList());
+        verify(jobRepository,times(1)).save(any(Job.class));
     }
 
     @Test
@@ -171,5 +170,6 @@ public class OfferServiceTest {
         when(jobRepository.findById(1L)).thenReturn(Optional.of(Job.builder().id(1L).name("job_1").stage(Stage.POSTED).build()));
 
         offerService.create(1L);
+        verify(offerRepository, times(1)).save(any(Offer.class));
     }
 }

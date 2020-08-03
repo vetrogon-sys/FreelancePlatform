@@ -44,6 +44,5 @@ public class Freelancer extends User {
                     .mapToDouble(Review::getScore)
                     .average().orElse(0.0));
         }
-
     }
 }

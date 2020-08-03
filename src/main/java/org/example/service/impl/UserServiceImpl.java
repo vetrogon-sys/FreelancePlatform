@@ -56,12 +56,12 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public boolean save(LoginDto loginDto) {
-        if (findByLogin(loginDto.getUsername()).isPresent()) {
+        if (findByLogin(loginDto.getUsername()).isPresent()
+                || loginDto.getPassword().isEmpty()) {
             return false;
         }
         String password = encoder.encode(loginDto.getPassword());
         Authority authority;
-
         User user;
 
         if (loginDto.isFreelancer()) {

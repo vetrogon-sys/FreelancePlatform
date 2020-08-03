@@ -6,40 +6,36 @@ import org.example.dto.JobDto;
 import org.example.entity.*;
 import org.example.exceptions.FailedRequestError;
 import org.example.repository.JobRepository;
-import org.example.service.JobService;
 import org.example.service.UserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
+@RunWith(MockitoJUnitRunner.class)
 public class JobServiceTest {
     private static final User employer = Employer.builder()
             .id(1L)
             .login("employer")
             .password("password")
             .build();
-
-    @MockBean
+    @Mock
     private JobRepository jobRepository;
-    @MockBean
+    @Mock
     private UserService userService;
 
-    @Autowired
-    private JobService jobService;
+    @InjectMocks
+    private JobServiceImpl jobService;
 
     @Before
     public void setUp() throws Exception {
@@ -115,9 +111,8 @@ public class JobServiceTest {
         when(userService.getUserFromSecurityContext()).thenReturn(employer);
 
         JobDto jobDto = JobDto.builder().name("jobDto_name").build();
-        Job expectedJob = Job.builder().id(1L).name("jobDto_name").employer((Employer) employer).stage(Stage.POSTED).build();
-        when(jobRepository.save(expectedJob)).thenReturn(expectedJob);
         jobService.create(jobDto);
+        verify(jobRepository, times(1)).save(any(Job.class));
     }
 
     @Test
@@ -130,18 +125,12 @@ public class JobServiceTest {
     @Test
     public void close_WhenJobIsPresent_And_PerformedTrue() throws FailedRequestError {
         jobService.close(1L, true);
-
-        Job expectedJob = Job.builder().id(1L).name("job_1").employer((Employer) employer).stage(Stage.COMPLETED).build();
-        when(jobRepository.save(expectedJob)).thenReturn(expectedJob);
-        jobService.close(1L, true);
+        verify(jobRepository, times(1)).save(any(Job.class));
     }
 
     @Test
     public void close_WhenJobIsPresent_And_PerformedFalse() throws FailedRequestError {
-        jobService.close(1L, true);
-
-        Job expectedJob = Job.builder().id(1L).name("job_1").employer((Employer) employer).stage(Stage.DECLINED).build();
-        when(jobRepository.save(expectedJob)).thenReturn(expectedJob);
         jobService.close(1L, false);
+        verify(jobRepository, times(1)).save(any(Job.class));
     }
 }
